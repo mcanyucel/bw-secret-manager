@@ -46,7 +46,7 @@ bw --version
 Add this repo as a subtree to your project:
 
 ```bash
-git subtree add --prefix tools/secrets_manager https://github.com/yourusername/secrets_manager.git main --squash
+git subtree add --prefix tools/secrets_manager https://github.com/mcanyucel/bw-secret-manager main --squash
 ```
 
 Run directly:
