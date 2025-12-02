@@ -6,7 +6,7 @@ A lightweight Python tool to fetch secrets from Bitwarden and generate environme
 
 - Uses Bitwarden CLI to securely fetch secrets.
 - Supports multiple environments (development, production, etc.).
-- Enforces a convention: secrets must be organized in Bitwarden collections named as `<project-name>/<environment>`.
+- Enforces a convention: secrets must be organized in Bitwarden folders named as `<project-name>/<environment>`.
 - Generates environment files based on a provided example file.
 - Writes generated files to a specified output directory atomically.
 - Clear color-coded output for better readability.
@@ -78,7 +78,7 @@ REDIS_URL=
 SECRET_KEY=
 ```
 
-2. Organize your secrets in Bitwarden collections following the convention `<project-name>/<environment>`. For example, for a project named `myproject` and an environment `dev`, create a collection named `myproject/dev`.
+2. Organize your secrets in Bitwarden folders following the convention `<project-name>/<environment>`. For example, for a project named `myproject` and an environment `dev`, create a folder named `myproject/dev`.
 
 3. Run the script:
 
@@ -110,13 +110,13 @@ python tools/secrets_manager/cli.py --project myapp --envs staging qa --example 
 
 1. Login: If not logged in, the script will prompt you to log in to Bitwarden.
 2. Unlock: If your vault is locked, you'll be prompted to unlock it with your master password.
-3. Fetch Secrets: The script fetches secrets from the specified Bitwarden collections.
+3. Fetch Secrets: The script fetches secrets from the specified Bitwarden folders.
 4. Generate Files: It generates the environment files based on the `.env.example` file. 
 5. Lock: The vault is locked again after fetching the secrets.
 
 ## Notes
 
-- Ensure that your Bitwarden CLI is properly configured and that you have access to the necessary collections.
+- Ensure that your Bitwarden CLI is properly configured and that you have access to the necessary folders.
 - Secrets are never stored in the repository; they are fetched at runtime.
 - Handle your master password and session tokens securely.
 - If a secret is missing, you will be notified in the output with a `[WARN]` message.

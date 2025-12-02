@@ -3,14 +3,6 @@ import bitwarden
 import utils
 
 def parse_env_example(example_file="env.example"):
-    """Parse the env.example file to get a list of environment variable names.
-
-    Args:
-        example_file (str): Path to the env.example file.
-
-    Returns:
-        list: List of environment variable names.
-    """
     env_vars = []
     with open(example_file, "r") as f:
         for line in f:
@@ -20,59 +12,50 @@ def parse_env_example(example_file="env.example"):
                 env_vars.append(var_name)
     return env_vars
 
-def build_collection_map(session):
-    """Build a mapping of collection names to their IDs in Bitwarden.
-
-    Args:
-        session (str): Bitwarden session token.
-    Returns:
-        dict: Mapping of collection names to IDs.
-    """
-    collections = bitwarden.run_bw(["list", "collections"], session=session, capture_json=True)
-    return {c["id"]: c["name"] for c in collections}
 
 def fetch_secret(session, project, env, key, id_to_name):
-    """Fetch a secret from Bitwarden.
-    
-    Note:
-        This function assumes that secrets are stored in collections named in the format "project/env/key".
+    """Fetch a secret from Bitwarden folders.
 
     Args:
         session (str): Bitwarden session token.
         project (str): Project name.
         env (str): Environment name.
         key (str): Secret key.
-        id_to_name (dict): Mapping of collection IDs to names.
+        id_to_name (dict): Mapping of folder IDs to names.
 
     Returns:
         str: The secret value.
     """
     items = bitwarden.run_bw(["list", "items"], session=session, capture_json=True)
-    target_collection = f"{project}/{env}"
+    target_folder = f"{project}/{env}"
     for item in items:
         if item.get("name") == key:
-            for cid in item.get("collectionIds", []):
-                if id_to_name.get(cid) == target_collection:
-                    return item.get("notes") or item.get("login", {}).get("password")
-    utils.warn(f"Warning: secret {key} not found in {target_collection}")
+            folder_id = item.get("folderId")
+            if id_to_name.get(folder_id) == target_folder:
+                return item.get("notes") or item.get("login", {}).get("password")
+    utils.warn(f"Warning: secret {key} not found in {target_folder}")
     return ""
 
 
-def write_env_file(session, project, env, keys, id_to_name):
-    """Write the .env file with secrets fetched from Bitwarden.
+import sys
+from pathlib import Path
+import bitwarden
+import utils
 
-    Args:
-        session (str): Bitwarden session token.
-        project (str): Project name.
-        env (str): Environment name.
-        keys (list): List of environment variable names to fetch.
-        id_to_name (dict): Mapping of collection IDs to names.
-    """
+def write_env_file(session, project, env, keys, id_to_name):
+    """Write the .env file with secrets fetched from Bitwarden, showing inline progress."""
     tmpFile = Path(f".env.{env}.tmp")
     with open(tmpFile, "w") as f:
         for key in keys:
             secret = fetch_secret(session, project, env, key, id_to_name)
             if secret is not None:
                 f.write(f"{key}={secret}\n")
+            # Inline progress update (overwrite same line)
+                sys.stdout.write(f"\r[INFO] saving {key} for {env}...\033[K")
+                sys.stdout.flush()
+
+
+    # Final newline so the last message doesn't stick on the same line
+    sys.stdout.write("\n")
     tmpFile.replace(f".env.{env}")
     utils.success(f".env.{env} file written successfully.")

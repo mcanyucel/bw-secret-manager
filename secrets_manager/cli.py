@@ -29,7 +29,7 @@ def main():
     session = bitwarden.unlock_vault()
     keys = env_writer.parse_env_example(args.example)
 
-    id_to_name = env_writer.build_collection_map(session)
+    id_to_name = bitwarden.build_folder_map(session)
 
     for env in args.envs:
         env_writer.write_env_file(session, args.project, env, keys, id_to_name)
